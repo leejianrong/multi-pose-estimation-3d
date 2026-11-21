@@ -100,13 +100,21 @@ def main() -> None:
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, required=True)
     ap.add_argument("--det-interval", type=int, default=1)
+    ap.add_argument("--threads", type=int, default=4, help="ONNX Runtime threads for this node")
+    ap.add_argument("--det-score", type=float, default=0.4)
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
     calib = load(args.calibration)
     if calib.id != args.camera:
         raise SystemExit(f"calibration id {calib.id!r} does not match --camera {args.camera!r}")
     source = SimSource()
-    node = CameraNode(args.camera, source, RtmPoseEstimator(det_interval=args.det_interval))
+    node = CameraNode(
+        args.camera,
+        source,
+        RtmPoseEstimator(
+            det_interval=args.det_interval, threads=args.threads, det_score_thr=args.det_score
+        ),
+    )
     asyncio.run(serve_node(node, source, args.host, args.port))
 
 
