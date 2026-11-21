@@ -4,10 +4,22 @@ version = "0.0.1"
 description = "Multi-person 3D pose to interactive sound sculpture simulation"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
-dependencies = []
+dependencies = [
+    "numpy>=2.4.6",
+    "onnxruntime>=1.32.0",
+    "pydantic>=2.14.4",
+    "rtmlib>=0.0.16",
+    "scipy>=1.17.1",
+    "websockets>=17.4",
+]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6", "pyright>=1.1.380"]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "pyright>=1.1.380",
+    "pytest-asyncio>=1.5.0",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -20,6 +32,8 @@ packages = ["python/posesim"]
 testpaths = ["tests"]
 markers = ["integration: needs real models, processes or network; excluded from the fast gate"]
 addopts = "-m 'not integration'"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 line-length = 100
@@ -31,3 +45,7 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.pyright]
 include = ["python", "scripts"]
 typeCheckingMode = "standard"
+
+[project.scripts]
+camera-node = "posesim.camera_node:main"
+fusion = "posesim.fusion:main"
