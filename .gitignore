@@ -1,0 +1,19 @@
+# secrets
+.env
+.env.*
+.mcp.json
+*.pem
+# python
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+# node
+node_modules/
+app/dist/
+# run output and fetched models/assets
+runs/
+models/
+assets/_cache/
+.DS_Store
