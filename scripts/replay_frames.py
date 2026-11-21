@@ -27,6 +27,8 @@ def main() -> None:
     stats: dict[str, list[int]] = {}
     for f in files:
         img = cv2.imread(str(f))
+        if img is None:
+            continue
         people, _ = est(img)
         cam = f.name.split("_")[0]
         stats.setdefault(cam, []).append(len(people))
