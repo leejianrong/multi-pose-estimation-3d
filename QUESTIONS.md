@@ -28,7 +28,7 @@ None. Round 1 closed.
 | Q14 | Concurrency | ASSUMED | Sim is the authoritative clock; messages timestamped; late results applied by timestamp. One writer per stream | ADR-0002 |
 | Q15 | Interfaces | ASSUMED | Browser app, Python `camera-node` + `fusion` services over WebSocket, CLI with `--json` and non-zero exit on failed metrics | PLAN §Shape |
 | Q16 | Failure behaviour | ASSUMED | <2 views → no 3D, flagged, no trigger; node down → banner, GT-fallback mode; never silent | PLAN §Implementation |
-| Q17 | Dependencies and licences | ASSUMED | three.js, Tone.js (MIT); rtmlib, RTMPose/YOLOX (Apache-2.0 assumed), onnxruntime, OpenCV. **Weights/licences verified in V1** | ADR-0006, 0007 |
+| Q17 | Dependencies and licences | ASSUMED | three.js, Tone.js (MIT); rtmlib, RTMPose/YOLOX (Apache-2.0 assumed), onnxruntime, OpenCV. **rtmlib code licence verified (MP3D-2); weights' training-data terms still unaudited** | ADR-0006, 0007 |
 | Q18 | Runtime | ASSUMED | Local only: `npm run dev` + `uv run` services on localhost | PLAN §Implementation |
 | Q19 | Success metrics | ASSUMED | Median MPJPE ≤ 80 mm (≤ 120 mm with distortion/noise); 0 ID switches on the scripted scenario; ≥10 FPS per node at 5 people; gesture P/R ≥ 0.9 on scripted clips; motion→scheduled ≤ 300 ms p95, audible ≤ 500 ms p95 | PLAN §Requirements |
 | Q20 | Security | ASSUMED | Nothing sensitive; servers bound to 127.0.0.1; no real people's video committed | PLAN §Implementation |

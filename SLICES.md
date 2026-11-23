@@ -4,6 +4,8 @@ Vertical increments. Each ends in something you can demonstrate. Slice 1 confron
 
 ## V1: One avatar, three views, 3D skeleton
 
+**Status (2026-11-24):** built; targets not met (MPJPE ~106 mm vs 80, ~3–5 FPS vs 10 live, 13–46 of 80–120 frames with 3D). Blocked on a human-like avatar (MP3D-9, `docs/avatar-handoff.md`).
+
 **Delivers:** R0 (partial), R1 (partial), R2 (partial), R3 (single person), R9 (partial)
 
 **Build plan**
@@ -78,6 +80,8 @@ Vertical increments. Each ends in something you can demonstrate. Slice 1 confron
 - Tracker coasts for 0.5 s and then drops the track.
 
 ## V3: Objects, proximity, first sound
+
+**Status (2026-11-24):** sculptures and proximity zones done (MP3D-10, MP3D-11). Pulse and panned tone remain (MP3D-12).
 
 **Delivers:** R1 (complete), R4, R6 (partial), R8 (partial)
 
