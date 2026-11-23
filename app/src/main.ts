@@ -1,4 +1,6 @@
 import { Dashboard } from "./dashboard";
+import { buildSculpture, type ObjectSpec } from "./objects";
+import { ZoneTracker, distanceToPolygon, pelvisXY } from "./proximity";
 import { Sim } from "./sim";
 import { Streamer } from "./streamer";
 import type { Calibration, Pose2D, RoomConfig, Skeleton3D } from "./types";
@@ -29,13 +31,27 @@ async function main(): Promise<void> {
   const cfg = await json<RoomConfig>("/repo/config/room.json");
   const calibs = await Promise.all(cfg.cameras.map((c) => json<Calibration>(`/repo/calibration/${c.id}.json`)));
   const sim = new Sim(cfg);
+  const { objects: specs } = await json<{ objects: ObjectSpec[] }>("/repo/config/objects.json");
+  const sculptures = specs.map(buildSculpture);
+  for (const o of sculptures) sim.scene.add(o.mesh);
+  const zones = new ZoneTracker();
   await sim.load(`/repo/${cfg.avatar.path}`);
   const streamer = new Streamer(calibs, cfg.services.nodes, host);
   const dash = new Dashboard(root, sim.scene, calibs.map((c) => c.id), !scenario);
 
   for (const c of calibs)
     subscribe<Pose2D>(`ws://${host}:${cfg.services.nodes[c.id]}/poses`, (m) => dash.onPose2D(m));
-  subscribe<Skeleton3D>(`ws://${host}:${cfg.services.fusion}`, (m) => dash.onSkeleton(m, streamer.sentAt.get(m.frame_id)));
+  subscribe<Skeleton3D>(`ws://${host}:${cfg.services.fusion}`, (m) => {
+    dash.onSkeleton(m, streamer.sentAt.get(m.frame_id));
+    for (const person of m.people) {
+      const pelvis = pelvisXY(person.joints);
+      if (!pelvis) continue;
+      for (const o of sculptures) {
+        const e = zones.update(person.track_id, o.spec.id, distanceToPolygon(pelvis, o.footprint), m.t_capture);
+        if (e) dash.onZoneEvent(e);
+      }
+    }
+  });
 
   while (!streamer.connected) await new Promise((r) => setTimeout(r, 200));
   await new Promise((r) => setTimeout(r, 500));

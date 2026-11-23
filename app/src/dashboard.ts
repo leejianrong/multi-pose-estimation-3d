@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { median, mpjpe, percentile } from "./metrics";
+import type { ZoneEvent } from "./proximity";
 import type { GtSkeleton, Pose2D, Skeleton3D } from "./types";
 
 const BONES: [number, number][] = [
@@ -18,14 +19,16 @@ export interface Report {
   node_ms: Record<string, Record<string, number>>;
   e2e_ms_median: number | null;
   e2e_ms_p95: number | null;
+  zone_events: ZoneEvent[];
   last_gt?: GtSkeleton;
   gt_by_frame: Record<number, GtSkeleton>;
 }
 
 function lines(color: number): THREE.LineSegments {
   const g = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(BONES.length * 6), 3));
-  const l = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color }));
+  const l = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color, depthTest: false }));
   l.frustumCulled = false;
+  l.renderOrder = 10; // draw over the body: the skeleton is inside the mesh
   l.layers.set(1); // dashboard only: must never appear in the sensor cameras' images
   return l;
 }
@@ -58,6 +61,7 @@ export class Dashboard {
   private nodeMs = new Map<string, Record<string, number>>();
   private stats: HTMLElement;
   private lastGt?: GtSkeleton;
+  private zoneEvents: ZoneEvent[] = [];
   framesSent = 0;
   skeletons = 0;
   framesWithPerson = 0;
@@ -139,6 +143,10 @@ export class Dashboard {
     if (e !== null) this.errors.push(e);
   }
 
+  onZoneEvent(e: ZoneEvent): void {
+    this.zoneEvents.push(e);
+  }
+
   report(): Report {
     const node_fps: Report["node_fps"] = {};
     for (const [id, t] of this.fpsTimes) node_fps[id] = t.length > 1 ? ((t.length - 1) * 1000) / (t[t.length - 1] - t[0]) : 0;
@@ -153,6 +161,7 @@ export class Dashboard {
       node_ms: Object.fromEntries(this.nodeMs),
       e2e_ms_median: median(this.e2e),
       e2e_ms_p95: percentile(this.e2e, 95),
+      zone_events: this.zoneEvents,
       last_gt: this.lastGt,
       gt_by_frame: Object.fromEntries(this.gtByFrame),
     };
@@ -166,6 +175,7 @@ export class Dashboard {
       `green = ground truth, red = estimated\nMPJPE median ${f(r.mpjpe_median_mm)} mm  p95 ${f(r.mpjpe_p95_mm)} mm\n` +
       `frames sent ${r.frames_sent}, with 3D person ${r.frames_with_person}\n` +
       Object.entries(r.node_fps).map(([k, v]) => `${k}: ${v.toFixed(1)} FPS ${JSON.stringify(r.node_ms[k] ? Object.fromEntries(Object.entries(r.node_ms[k]).map(([a, b]) => [a, Math.round(b)])) : {})}`).join("\n") +
+      `\nzones: ${this.zoneEvents.slice(-5).map((e) => `${e.object_id} ${e.from}>${e.to}`).join(", ")}` +
       `\nend-to-end median ${f(r.e2e_ms_median)} ms p95 ${f(r.e2e_ms_p95)} ms`;
   }
 
