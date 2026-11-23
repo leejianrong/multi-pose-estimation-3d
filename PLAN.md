@@ -1,6 +1,6 @@
 # Multi-person 3D pose → interactive sound sculpture sim: Plan
 
-Status: draft · Milestone: MVP
+Status: in progress (V1, V3 built; see README) · Milestone: MVP
 
 ## Problem
 
