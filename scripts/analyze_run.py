@@ -44,19 +44,19 @@ def main() -> None:
         skel = fuse_frame(calibs, poses)
         if not skel.people:
             continue
-        j = skel.people[0].joints
-        gt = gt_all[str(fid)]
+        pts = [None if q is None else np.array(q[:3]) for q in skel.people[0].joints]
+        gt = [None if g is None else np.array(g) for g in gt_all[str(fid)]]
         for variant, store in ((list(range(17)), errs), (SWAP, errs_sw)):
             d = [
-                np.linalg.norm(np.array(gt[i]) - np.array(j[variant[i]][:3]))
+                float(np.linalg.norm(g - e))
                 for i in EVAL
-                if gt[i] is not None and j[variant[i]] is not None
+                if (g := gt[i]) is not None and (e := pts[variant[i]]) is not None
             ]
             if len(d) >= 6:
                 store.append(float(np.mean(d)))
         for i in EVAL:
-            if gt[i] is not None and j[i] is not None:
-                per_joint[i] += np.linalg.norm(np.array(gt[i]) - np.array(j[i][:3]))
+            if (g := gt[i]) is not None and (e := pts[i]) is not None:
+                per_joint[i] += np.linalg.norm(g - e)
         n += 1
     print(f"frames with 3D: {n}")
     as_is, swapped = np.median(errs) * 1000, np.median(errs_sw) * 1000
