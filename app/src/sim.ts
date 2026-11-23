@@ -84,6 +84,11 @@ export class Sim {
     this.duration = clip.duration;
     this.mixer.clipAction(clip).play();
     this.pose(0);
+    // Rescale so shoulder-to-ankle matches the config (CesiumMan is ~1.3 m tall). A correctly
+    // authored avatar (~1.7 m) ends up with a scale of ~1.
+    model.updateMatrixWorld(true);
+    const span = Math.abs(this.world(BONES.shoulder[0]).z - this.world(BONES.ankle[0]).z);
+    model.scale.setScalar(this.cfg.avatar.shoulder_to_ankle_m / span);
     this.resolveSides();
   }
 
@@ -98,7 +103,9 @@ export class Sim {
     this.avatar.updateMatrixWorld(true);
     const [tl, tr] = BONES.toe.map((n) => this.world(n));
     const [al, ar] = BONES.ankle.map((n) => this.world(n));
-    const fwd = tl.sub(al).add(tr.sub(ar));
+    // CesiumMan's "toe" joints sit behind the ankles, so the foot-forward direction is the inverse.
+    // Verified against the pose model: with the sign the other way round, left/right were swapped.
+    const fwd = tl.sub(al).add(tr.sub(ar)).negate();
     fwd.z = 0;
     fwd.normalize();
     // anatomical right-hand side of a person facing `fwd` with +Z up is fwd x up

@@ -19,6 +19,7 @@ export interface Report {
   e2e_ms_median: number | null;
   e2e_ms_p95: number | null;
   last_gt?: GtSkeleton;
+  gt_by_frame: Record<number, GtSkeleton>;
 }
 
 function lines(color: number): THREE.LineSegments {
@@ -153,6 +154,7 @@ export class Dashboard {
       e2e_ms_median: median(this.e2e),
       e2e_ms_p95: percentile(this.e2e, 95),
       last_gt: this.lastGt,
+      gt_by_frame: Object.fromEntries(this.gtByFrame),
     };
   }
 

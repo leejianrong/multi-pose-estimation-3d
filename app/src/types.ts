@@ -14,7 +14,7 @@ export interface RoomConfig {
   camera_width: number;
   camera_height: number;
   cameras: { id: string }[];
-  avatar: { path: string; path_radius: number; speed_mps: number };
+  avatar: { path: string; path_radius: number; speed_mps: number; shoulder_to_ankle_m: number };
   services: { nodes: Record<string, number>; fusion: number };
 }
 
